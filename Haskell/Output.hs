@@ -30,10 +30,8 @@ import System.Exit
   , ExitCode(..)
   )
 
-import System.IO
 import Flags
 import Form
-
 
 ---------------------------------------------------------------------------
 -- outputs

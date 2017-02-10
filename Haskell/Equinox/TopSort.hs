@@ -25,7 +25,7 @@ topsort g = (cyc, deps)
  where
   (cyc, deps, _) = process S.empty S.empty (S.toList (nodes g))
 
-  process seen busy [] =
+  process seen _busy [] =
     (S.empty, [], seen)
 
   process seen busy (x:xs) | x `S.member` seen =

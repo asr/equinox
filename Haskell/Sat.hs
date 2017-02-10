@@ -61,7 +61,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -}
 
-import Foreign.C.Types       ( CInt )
+import Foreign.C.Types       ( CInt(CInt) )
 import Foreign.C.String      ( CString, withCString )
 import Foreign.Ptr           ( Ptr, FunPtr, nullPtr )
 import Foreign.ForeignPtr    ( ForeignPtr, newForeignPtr, withForeignPtr )

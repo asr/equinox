@@ -151,11 +151,11 @@ instance Monad (Parser s) where
     Parser (\fut -> f (\a -> let Parser g = k a in g fut))
 
   fail s =
-    Parser (\fut exp -> Fail exp [s])
+    Parser (\_fut exp -> Fail exp [s])
 
 instance MonadPlus (Parser s) where
   mzero =
-    Parser (\fut exp -> Fail exp [])
+    Parser (\_fut exp -> Fail exp [])
 
   mplus (Parser f) (Parser g) =
     Parser (\fut exp -> f fut exp `plus` g fut exp)
@@ -176,7 +176,7 @@ _              `plus` q@(Symbol _)   = q
 
 anySymbol :: Parser s s
 anySymbol =
-  Parser (\fut exp -> Symbol (\c ->
+  Parser (\fut _exp -> Symbol (\c ->
     fut c []
   ))
 
@@ -208,7 +208,7 @@ succeeds (Parser f) =
     Look (\xs ->
       let sim (Symbol f)     q (x:xs) = sim (f x) (\k -> Symbol (\_ -> q k)) xs
           sim (Look f)       q xs     = sim (f xs) q xs
-          sim p@(Result _ _) q xs     = q (cont p)
+          sim p@(Result _ _) q _      = q (cont p)
           sim _              _ _      = fut Nothing []
 
           cont (Symbol f)       = Symbol (\x -> cont (f x))
@@ -366,7 +366,7 @@ shortestResult p xs = scan p xs
   scan (Symbol sym)   (x:xs) = scan (sym x) xs
   scan (Symbol _)     []     = scan (Fail [] []) []
   scan (Result res _) _      = Right res
-  scan (Fail exp err) (x:xs) = failSym x exp err
+  scan (Fail exp err) (x:_)  = failSym x exp err
   scan (Fail exp err) []     = failEof exp err
   scan (Look f)       xs     = scan (f xs) xs
 
@@ -376,7 +376,7 @@ longestResult p xs = scan p Nothing xs
   scan (Symbol sym)   mres       (x:xs) = scan (sym x) mres xs
   scan (Symbol _)     mres       []     = scan (Fail [] []) mres []
   scan (Result res p) _          xs     = scan p (Just res) xs
-  scan (Fail exp err) Nothing    (x:xs) = failSym x exp err
+  scan (Fail exp err) Nothing    (x:_)  = failSym x exp err
   scan (Fail exp err) Nothing    []     = failEof exp err
   scan (Fail _ _)     (Just res) _      = Right res
   scan (Look f)       mres       xs     = scan (f xs) mres xs
@@ -385,10 +385,10 @@ longestResults :: ParseMethod s a (Maybe s) [a]
 longestResults p xs = scan p [] [] xs
  where
   scan (Symbol sym)   []  old (x:xs) = scan (sym x) [] old xs
-  scan (Symbol sym)   new old (x:xs) = scan (sym x) [] new xs
+  scan (Symbol sym)   new _   (x:xs) = scan (sym x) [] new xs
   scan (Symbol _)     new old []     = scan (Fail [] []) new old []
-  scan (Result res p) new old xs     = scan p (res:new) [] xs
-  scan (Fail exp err) []  []  (x:xs) = failSym x exp err
+  scan (Result res p) new _   xs     = scan p (res:new) [] xs
+  scan (Fail exp err) []  []  (x:_)  = failSym x exp err
   scan (Fail exp err) []  []  []     = failEof exp err
   scan (Fail _ _)     []  old _      = Right old
   scan (Fail _ _)     new _   _      = Right new
@@ -409,7 +409,7 @@ allResults p xs = scan p xs
   scan (Symbol sym)   (x:xs) = scan (sym x) xs
   scan (Symbol _)     []     = scan (Fail [] []) []
   scan (Result res p) xs     = Right (res : scan' p xs)
-  scan (Fail exp err) (x:xs) = failSym x exp err
+  scan (Fail exp err) (x:_)  = failSym x exp err
   scan (Fail exp err) []     = failEof exp err
   scan (Look f)       xs     = scan (f xs) xs
 
@@ -425,7 +425,7 @@ completeResults p xs = scan p xs
   scan (Symbol _)     []     = scan (Fail [] []) []
   scan (Result res p) []     = Right (res : scan' p [])
   scan (Result _ p)   xs     = scan p xs
-  scan (Fail exp err) (x:xs) = failSym x exp err
+  scan (Fail exp err) (x:_)  = failSym x exp err
   scan (Fail exp err) []     = failEof exp err
   scan (Look f)       xs     = scan (f xs) xs
 
@@ -442,7 +442,7 @@ shortestResultWithLeftover p xs = scan p xs
   scan (Symbol sym)   (x:xs) = scan (sym x) xs
   scan (Symbol _)     []     = scan (Fail [] []) []
   scan (Result res _) xs     = Right (res,xs)
-  scan (Fail exp err) (x:xs) = failSym x exp err
+  scan (Fail exp err) (x:_)  = failSym x exp err
   scan (Fail exp err) []     = failEof exp err
   scan (Look f)       xs     = scan (f xs) xs
 
@@ -452,7 +452,7 @@ longestResultWithLeftover p xs = scan p Nothing xs
   scan (Symbol sym)   mres         (x:xs) = scan (sym x) mres xs
   scan (Symbol _)     mres         []     = scan (Fail [] []) mres []
   scan (Result res p) _            xs     = scan p (Just (res,xs)) xs
-  scan (Fail exp err) Nothing      (x:xs) = failSym x exp err
+  scan (Fail exp err) Nothing      (x:_)  = failSym x exp err
   scan (Fail exp err) Nothing      []     = failEof exp err
   scan (Fail _ _)     (Just resxs) _      = Right resxs
   scan (Look f)       mres         xs     = scan (f xs) mres xs
@@ -461,10 +461,10 @@ longestResultsWithLeftover :: ParseMethod s a (Maybe s) ([a],Maybe [s])
 longestResultsWithLeftover p xs = scan p empty empty xs
  where
   scan (Symbol sym)   ([],_) old    (x:xs) = scan (sym x) empty old xs
-  scan (Symbol sym)   new    old    (x:xs) = scan (sym x) empty new xs
+  scan (Symbol sym)   new    _      (x:xs) = scan (sym x) empty new xs
   scan (Symbol _)     new    old    []     = scan (Fail [] []) new old []
-  scan (Result res p) (as,_) old    xs     = scan p (res:as,Just xs) empty xs
-  scan (Fail exp err) ([],_) ([],_) (x:xs) = failSym x exp err
+  scan (Result res p) (as,_) _      xs     = scan p (res:as,Just xs) empty xs
+  scan (Fail exp err) ([],_) ([],_) (x:_)  = failSym x exp err
   scan (Fail exp err) ([],_) ([],_) []     = failEof exp err
   scan (Fail _ _)     ([],_)  old _        = Right old
   scan (Fail _ _)     new _   _            = Right new
@@ -478,7 +478,7 @@ allResultsWithLeftover p xs = scan p xs
   scan (Symbol sym)   (x:xs) = scan (sym x) xs
   scan (Symbol _)     []     = scan (Fail [] []) []
   scan (Result res p) xs     = Right ((res,xs) : scan' p xs)
-  scan (Fail exp err) (x:xs) = failSym x exp err
+  scan (Fail exp err) (x:_)  = failSym x exp err
   scan (Fail exp err) []     = failEof exp err
   scan (Look f)       xs     = scan (f xs) xs
 
@@ -494,7 +494,7 @@ completeResultsWithLine p xs = scan p 1 xs
   scan (Symbol _)     n []     = scan (Fail [] ["end of file"]) n []
   scan (Result res p) n []     = Right (res : scan' p n [])
   scan (Result _ p)   n xs     = scan p n xs
-  scan (Fail exp err) n xs     = Left (n, exp, err)
+  scan (Fail exp err) n _      = Left (n, exp, err)
   scan (Look f)       n xs     = scan (f xs) n xs
 
   scan' p n xs =

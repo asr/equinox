@@ -45,8 +45,6 @@ import GHC.Environment
   ( getFullArgs
   )
 
-import System.IO
-
 import Data.List
   ( groupBy
   , intersperse

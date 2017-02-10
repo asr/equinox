@@ -50,7 +50,7 @@ psequence n ios =
      sequence_ [ forkOS (serve i st) | (i,_) <- [0..n-1] `zip` ios ]
      results 0 ios M.empty chan
  where
-  (w1,_) `cmp` (w2,_) = w2 `compare` w1
+  -- (w1,_) `cmp` (w2,_) = w2 `compare` w1
 
   serve i st =
     do mio <- takeFromStealQueue i st
@@ -61,7 +61,7 @@ psequence n ios =
 
 
 
-  results k [] _ _ =
+  results _k [] _ _ =
     do return []
 
   results k ios futs chan =
