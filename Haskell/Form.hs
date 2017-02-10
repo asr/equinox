@@ -1,6 +1,5 @@
 {-# LANGUAGE TypeOperators #-}
 
-{-# OPTIONS -XGenerics #-}
 module Form where
 
 {-
@@ -30,8 +29,8 @@ import Data.Set as S( Set )
 import qualified Data.Set as S
 import Data.Map as M( Map )
 import qualified Data.Map as M
-import Data.Generics
 import Data.List
+import Control.Monad.State
 
 import Name
 
@@ -427,9 +426,10 @@ class Symbolic a where
   symbols   :: a -> Set Symbol
   free      :: a -> Set Symbol
   subterms  :: a -> Set Term
-  subst'    :: Subst -> a -> Mybe r a
-  occurring :: Symbol -> [Term] -> a -> (a,[Term])
+  subst'    :: Subst -> a -> Maybe a
+  occurring :: Symbol -> a -> State [Term] a
 
+{-
   symbols{| Unit |}    Unit      = S.empty
   symbols{| a :*: b |} (x :*: y) = symbols x `S.union` symbols y
   symbols{| a :+: b |} (Inl x)   = symbols x
@@ -458,32 +458,135 @@ class Symbolic a where
                                             in (x' :*: y', ts2)
   occurring{| a :+: b |} z ts (Inl x)    = let (x', ts') = occurring z ts x in (Inl x', ts')
   occurring{| a :+: b |} z ts (Inr y)    = let (y', ts') = occurring z ts y in (Inr y', ts')
+-}
 
 subst :: Symbolic a => Subst -> a -> a
-subst sub a = subst' sub a a id
+subst sub a = case subst' sub a of
+                Nothing -> a
+                Just a' -> a'
 
 isGround :: Symbolic a => a -> Bool
 isGround x = S.null (free x)
 
-instance                             Symbolic ()
-instance (Symbolic a, Symbolic b) => Symbolic (a,b)
-instance Symbolic a               => Symbolic (Signed a)
+takeTerm :: Term -> State [Term] Term
+takeTerm t = do
+  ts <- get
+  case ts of
+    [] -> return t
+    (t':ts') -> do
+      put ts'
+      return t
+
+instance Symbolic () where
+  symbols     () = S.empty
+  free        () = S.empty
+  subterms    () = S.empty
+  subst' sub  () = Nothing
+  occurring s () = return ()
+
+instance (Symbolic a, Symbolic b) => Symbolic (a,b) where
+  symbols     (x,y) = symbols x `S.union` symbols y
+  free        (x,y) = free x `S.union` free y
+  subterms    (x,y) = subterms x `S.union` subterms y
+  subst' sub  (x,y) =
+    case (subst' sub x, subst' sub y) of
+      (Nothing, Nothing) -> Nothing
+      (mx,      my)      -> Just (maybe x id mx, maybe y id my)
+  occurring s (x,y) = liftM2 (,) (occurring s x) (occurring s y)
+
+instance Symbolic a => Symbolic (Signed a) where
+  symbols (Pos x) = symbols x
+  symbols (Neg x) = symbols x
+
+  free (Pos x) = free x
+  free (Neg x) = free x
+
+  subterms (Pos x) = subterms x
+  subterms (Neg x) = subterms x
+
+  subst' sub (Pos x) = Pos `fmap` subst' sub x
+  subst' sub (Neg x) = Neg `fmap` subst' sub x
+
+  occurring s (Pos x) = Pos `fmap` occurring s x
+  occurring s (Neg x) = Neg `fmap` occurring s x
 
 instance Symbolic a => Symbolic [a] where
-  occurring _ ts []     = ([], ts)
-  occurring z ts (x:xs) = let ((x',xs'),ts') = occurring z ts (x,xs) in (x':xs',ts')
+  symbols []     = S.empty
+  symbols (x:xs) = symbols (x,xs)
+
+  free []     = S.empty
+  free (x:xs) = free (x,xs)
+
+  subterms []     = S.empty
+  subterms (x:xs) = subterms (x,xs)
+
+  subst' sub []     = Nothing
+  subst' sub (x:xs) = uncurry (:) `fmap` subst' sub (x,xs)
+
+  occurring s [] = return []
+  occurring s (x:xs) = liftM2 (:) (occurring s x) (occurring s xs)
 
 instance (Ord a, Symbolic a) => Symbolic (Set a) where
   symbols s        = symbols (S.toList s)
   free s           = free (S.toList s)
-  --subst sub s = S.map (subst sub) s
   subterms s       = subterms (S.toList s)
-  subst' sub       = mlift1 S.fromList . subst' sub . S.toList
-  occurring z ts s = let (xs', ts') = occurring z ts (S.toList s) in (S.fromList xs', ts')
+  subst' sub       = (S.fromList `fmap`) . subst' sub . S.toList
+  occurring s set  = fmap S.fromList (occurring s (S.toList set))
 
-instance Symbolic Atom
-instance Symbolic QClause
-instance Symbolic Form
+instance Symbolic Atom where
+  symbols     (s :=: t) = symbols (s,t)
+  free        (s :=: t) = free (s,t)
+  subterms    (s :=: t) = subterms (s,t)
+  subst' sub  (s :=: t) = uncurry (:=:) `fmap` subst' sub (s,t)
+  occurring u (s :=: t) = liftM2 (:=:) (occurring u s) (occurring u t)
+
+instance Symbolic QClause where
+  symbols     (Uniq q) = symbols q
+  free        (Uniq q) = free q
+  subterms    (Uniq q) = subterms q
+  subst' sub  (Uniq q) = Uniq `fmap` subst' sub q
+  occurring s (Uniq q) = Uniq `fmap` occurring s q
+
+instance Symbolic Form where
+  symbols (Atom a)      = symbols a
+  symbols (And xs)      = symbols xs
+  symbols (Or xs)       = symbols xs
+  symbols (x `Equiv` y) = symbols (x,y)
+  symbols (Not x)       = symbols x
+  symbols (ForAll q)    = symbols q
+  symbols (Exists q)    = symbols q
+
+  free (Atom a)      = free a
+  free (And xs)      = free xs
+  free (Or xs)       = free xs
+  free (x `Equiv` y) = free (x,y)
+  free (Not x)       = free x
+  free (ForAll q)    = free q
+  free (Exists q)    = free q
+
+  subterms (Atom a)      = subterms a
+  subterms (And xs)      = subterms xs
+  subterms (Or xs)       = subterms xs
+  subterms (x `Equiv` y) = subterms (x,y)
+  subterms (Not x)       = subterms x
+  subterms (ForAll q)    = subterms q
+  subterms (Exists q)    = subterms q
+
+  subst' sub (Atom a)      = Atom `fmap` subst' sub a
+  subst' sub (And xs)      = And `fmap` subst' sub xs
+  subst' sub (Or xs)       = Or `fmap` subst' sub xs
+  subst' sub (x `Equiv` y) = uncurry Equiv `fmap` subst' sub (x,y)
+  subst' sub (Not x)       = Not `fmap` subst' sub x
+  subst' sub (ForAll q)    = ForAll `fmap` subst' sub q
+  subst' sub (Exists q)    = Exists `fmap` subst' sub q
+
+  occurring s (Atom a)      = Atom `fmap` occurring s a
+  occurring s (And xs)      = And `fmap` occurring s xs
+  occurring s (Or xs)       = Or `fmap` occurring s xs
+  occurring s (x `Equiv` y) = liftM2 Equiv (occurring s x) (occurring s y)
+  occurring s (Not x)       = Not `fmap` occurring s x
+  occurring s (ForAll q)    = ForAll `fmap` occurring s q
+  occurring s (Exists q)    = Exists `fmap` occurring s q
 
 instance Symbolic Term where
   symbols (Fun f xs) = f `S.insert` symbols xs
@@ -497,23 +600,21 @@ instance Symbolic Term where
 
   subterms t = t `S.insert`
     case t of
-      Fun _f xs -> subterms xs
-      _         -> S.empty
+      Fun f xs -> subterms xs
+      _        -> S.empty
 
-  subst' sub (Fun f xs) = mlift1 (Fun f) (subst' sub xs)
-  subst' sub (Var v) =
-    case M.lookup v (mapp sub) of
-      Nothing -> nothing
-      Just t' -> just t'
+  subst' sub (Fun f xs) = Fun f `fmap` subst' sub xs
+  subst' sub x@(Var v)  = M.lookup v (mapp sub)
 
-  occurring z ts     (Fun f xs)       = let (xs', ts') = occurring z ts xs in (Fun f xs', ts')
-  occurring z (t:ts) (Var v) | v == z = (t,ts)
-  occurring _ ts     t                = (t,ts)
+  occurring s (Fun f xs) = Fun f `fmap` occurring s xs
+  occurring s x@(Var v)
+    | s == v = takeTerm x
+    | otherwise = return x
 
 instance Symbolic a => Symbolic (Bind a) where
   symbols   (Bind v a) = v `S.insert` symbols a
   free      (Bind v a) = v `S.delete` free a
-  subterms  (Bind _ a) = subterms a
+  subterms  (Bind v a) = subterms a
 {-
   subst sub (Bind v a) = Bind v' (subst (Subst vs' mp') a)
    where
@@ -544,7 +645,7 @@ instance Symbolic a => Symbolic (Bind a) where
                   ]
                 )
 -}
-  subst' sub (Bind v a) = mlift1 (Bind v') (subst' (Subst vs' mp') a)
+  subst' sub (Bind v a) = Bind v' `fmap` subst' (Subst vs' mp') a
    where
     Subst vs mp = sub
 
@@ -573,10 +674,9 @@ instance Symbolic a => Symbolic (Bind a) where
                   ]
                 )
 
-  -- here, we have risk that x is bound in one of the ts...
-  occurring z ts (Bind x a)
-    | x == z    = (Bind x a, ts)
-    | otherwise = let (a', ts') = occurring z ts a in (Bind x a', ts')
+  occurring s x@(Bind v a)
+    | s == v = return x
+    | otherwise = Bind v `fmap` occurring s a
 
 ----------------------------------------------------------------------
 -- input clauses

@@ -8,7 +8,7 @@ stability:              Experimental
 cabal-version:          >= 1.6
 build-type:             Simple
 homepage:               github.com/nick8325/equinox.git
-tested-with:            GHC == 7.0.4
+tested-with:            GHC == 7.2.2
 
 executable              equinox
     ghc-options:        -threaded -O2 -static -optl
@@ -26,5 +26,4 @@ executable              equinox
                 , mtl        >= 2.0
                 , QuickCheck >= 2.0
                 , random     >= 1.0
-                , syb        >= 0.3.1 && < 0.3.2
 

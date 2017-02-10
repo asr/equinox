@@ -1,7 +1,5 @@
 {-# LANGUAGE ImplicitParams #-}
 
-{-# OPTIONS -XGenerics #-}
-
 module Clausify
   ( clausify
   )
@@ -421,7 +419,11 @@ literal w vs =
 
 data Seq a = List [a] | Seq a `Cat` Seq a
 
-instance Symbolic a => Symbolic (Seq a)
+instance Symbolic a => Symbolic (Seq a) where
+  symbols    = symbols . toList
+  free       = free . toList
+  subterms   = subterms . toList
+  subst' sub = (fromList `fmap`) . subst' sub . toList
 
 instance Functor Seq where
   fmap f (List xs)   = List (map f xs)
