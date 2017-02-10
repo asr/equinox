@@ -8,7 +8,6 @@ module Clausify
  where
 
 import Form
-import qualified Form
 import Name
 import Data.Set( Set )
 import Data.List( nub, maximumBy, sortBy )

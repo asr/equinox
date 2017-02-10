@@ -31,17 +31,12 @@ import System
 
 import Char
   ( isSpace
-  , isAlpha
   , isAlphaNum
-  , isDigit
   , isUpper
-  , isLower
   )
 
 import List
   ( intersperse
-  , (\\)
-  , tails
   , nub
   )
 
@@ -49,15 +44,6 @@ import IO
   ( hFlush
   , stdout
   , try
-  )
-
-import System.IO.Error
-  ( ioError
-  , userError
-  )
-
-import Monad
-  ( guard
   )
 
 import Form

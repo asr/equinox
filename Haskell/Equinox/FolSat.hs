@@ -28,15 +28,12 @@ import qualified Sat
 import Name( name, prim, (%) )
 import List hiding ( union, insert, delete )
 import Maybe
-import Equinox.Fair
 import Equinox.TermSat hiding ( Lit(..) )
-import Equinox.TermSat ( Lit )
 import qualified Equinox.TermSat as T
 import Data.Set( Set )
 import qualified Data.Set as S
 import Data.Map( Map )
 import qualified Data.Map as M
-import Data.Maybe( isJust, fromJust )
 import IO
 import Flags
 import Control.Monad

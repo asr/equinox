@@ -27,10 +27,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -}
 
-import qualified Data.Map as M
 import Data.Char
-import Data.IORef
-import System.IO.Unsafe
 
 -- This module provides an abstract datatype for atoms, such that:
 --   * Each atom string is only in memory once
@@ -124,7 +121,7 @@ str =
 -- hash stuff
 
 hash :: Int -> [Int] -> Int
-hash p []     = 0
+hash _ []     = 0
 hash p (i:is) = i + p * hash p is
 
 primes, bigprimes :: [Int]

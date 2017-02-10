@@ -53,12 +53,11 @@ import Equinox.ConSat
   , Con
   , neg
   )
-import Data.Set( Set )
+
 import qualified Data.Set as S
 import Data.Map( Map )
 import qualified Data.Map as M
 import List
-import Maybe
 import Form( Symbol )
 import Flags
 import IO

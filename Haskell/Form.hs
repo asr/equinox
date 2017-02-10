@@ -204,8 +204,8 @@ instance Show Form where
                             = showsPrec n a
 
   showsPrec n (Atom a)      = showsPrec n a
-  showsPrec n (And xs)      = showsOps "&" "$true" (S.toList xs)
-  showsPrec n (Or xs)       = showsOps "|" "$false" (S.toList xs)
+  showsPrec _ (And xs)      = showsOps "&" "$true" (S.toList xs)
+  showsPrec _ (Or xs)       = showsOps "|" "$false" (S.toList xs)
   showsPrec n (x `Equiv` y) = showString "("
                             . showsPrec n x
                             . showString " <=> "
@@ -217,11 +217,11 @@ instance Show Form where
   showsPrec n (Exists b)    = showString "?"
                             . showsPrec n b
 
-showsOps op unit []  = showString unit
-showsOps op unit [x] = shows x
-showsOps op unit xs  = showString "("
-                     . opers (" " ++ op ++ " ") xs
-                     . showString ")"
+showsOps _op unit  []   = showString unit
+showsOps _op _unit [x]  = shows x
+showsOps op  _unit  xs  = showString "("
+                          . opers (" " ++ op ++ " ") xs
+                          . showString ")"
 
 mapOverTerms :: (Term -> Term) -> Form -> Form
 mapOverTerms f (Atom (t1 :=: t2)) = Atom ((f t1) :=: (f t2))
@@ -409,10 +409,10 @@ look v t sub =
 type Mybe r a = r -> (a -> r) -> r
 
 nothing :: Mybe r a
-nothing = \no yes -> no
+nothing = \no _yes -> no
 
 just :: a -> Mybe r a
-just x = \no yes -> yes x
+just x = \_no yes -> yes x
 
 mlift1 :: (a -> b) -> Mybe r a -> Mybe r b
 mlift1 f m = \no yes -> m no (\x -> yes (f x))
@@ -445,19 +445,19 @@ class Symbolic a where
   subterms{| a :+: b |} (Inl x)   = subterms x
   subterms{| a :+: b |} (Inr y)   = subterms y
 
-  subst'{| Unit |}    sub Unit      = nothing
-  subst'{| a :*: b |} sub (x :*: y) = \no yes ->
+  subst'{| Unit |}    _sub Unit      = nothing
+  subst'{| a :*: b |} sub  (x :*: y) = \no yes ->
     subst' sub x (subst' sub y no (\y' -> yes (x :*: y'))) (\x' ->
       subst' sub y (yes (x' :*: y)) (\y' -> yes (x' :*: y')))
-  subst'{| a :+: b |} sub (Inl x)   = mlift1 Inl (subst' sub x)
-  subst'{| a :+: b |} sub (Inr y)   = mlift1 Inr (subst' sub y)
+  subst'{| a :+: b |} sub (Inl x)    = mlift1 Inl (subst' sub x)
+  subst'{| a :+: b |} sub (Inr y)    = mlift1 Inr (subst' sub y)
 
-  occurring{| Unit |}    z ts Unit      = (Unit,ts)
-  occurring{| a :*: b |} z ts (x :*: y) = let (x',ts1) = occurring z ts x
-                                              (y',ts2) = occurring z ts1 y
-                                           in (x' :*: y', ts2)
-  occurring{| a :+: b |} z ts (Inl x)   = let (x', ts') = occurring z ts x in (Inl x', ts')
-  occurring{| a :+: b |} z ts (Inr y)   = let (y', ts') = occurring z ts y in (Inr y', ts')
+  occurring{| Unit |}    _z ts Unit      = (Unit,ts)
+  occurring{| a :*: b |} z  ts (x :*: y) = let (x',ts1) = occurring z ts x
+                                               (y',ts2) = occurring z ts1 y
+                                            in (x' :*: y', ts2)
+  occurring{| a :+: b |} z ts (Inl x)    = let (x', ts') = occurring z ts x in (Inl x', ts')
+  occurring{| a :+: b |} z ts (Inr y)    = let (y', ts') = occurring z ts y in (Inr y', ts')
 
 subst :: Symbolic a => Subst -> a -> a
 subst sub a = subst' sub a a id
@@ -470,7 +470,7 @@ instance (Symbolic a, Symbolic b) => Symbolic (a,b)
 instance Symbolic a               => Symbolic (Signed a)
 
 instance Symbolic a => Symbolic [a] where
-  occurring z ts []     = ([], ts)
+  occurring _ ts []     = ([], ts)
   occurring z ts (x:xs) = let ((x',xs'),ts') = occurring z ts (x,xs) in (x':xs',ts')
 
 instance (Ord a, Symbolic a) => Symbolic (Set a) where
@@ -497,23 +497,23 @@ instance Symbolic Term where
 
   subterms t = t `S.insert`
     case t of
-      Fun f xs -> subterms xs
-      _        -> S.empty
+      Fun _f xs -> subterms xs
+      _         -> S.empty
 
   subst' sub (Fun f xs) = mlift1 (Fun f) (subst' sub xs)
-  subst' sub x@(Var v)  =
+  subst' sub (Var v) =
     case M.lookup v (mapp sub) of
       Nothing -> nothing
       Just t' -> just t'
 
   occurring z ts     (Fun f xs)       = let (xs', ts') = occurring z ts xs in (Fun f xs', ts')
   occurring z (t:ts) (Var v) | v == z = (t,ts)
-  occurring z ts     t                = (t,ts)
+  occurring _ ts     t                = (t,ts)
 
 instance Symbolic a => Symbolic (Bind a) where
   symbols   (Bind v a) = v `S.insert` symbols a
   free      (Bind v a) = v `S.delete` free a
-  subterms  (Bind v a) = subterms a
+  subterms  (Bind _ a) = subterms a
 {-
   subst sub (Bind v a) = Bind v' (subst (Subst vs' mp') a)
    where

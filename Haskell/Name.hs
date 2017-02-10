@@ -84,7 +84,7 @@ el = name ""
 isName :: (Name -> Bool) -> Name -> Bool
 isName p n | p n  = True
 isName p (n :% _) = isName p n
-isName p _        = False
+isName _ _        = False
 
 isSimpleName (Name _) = True
 isSimpleName _        = False
@@ -96,9 +96,9 @@ getIndex (_ :% i) = i
 getIndex _        = 0
 
 normalName :: String -> Name -> String
-normalName x (Name s) = show s
+normalName _ (Name s) = show s
 normalName x (n :% i) = normalName x n ++ "_" ++ x ++ show i
-normalName x (Prim s) = show s
+normalName _ (Prim s) = show s
 
 ---------------------------------------------------------------------------
 -- the end.
