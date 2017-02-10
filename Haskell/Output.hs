@@ -1,3 +1,5 @@
+{-# LANGUAGE ImplicitParams #-}
+
 module Output where
 
 {-

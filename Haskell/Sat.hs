@@ -1,3 +1,5 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
 module Sat
   ( S             -- :: * -> *; Functor, Monad
   , Lit           -- :: *; Eq, Ord, Show

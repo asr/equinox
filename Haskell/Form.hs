@@ -1,3 +1,5 @@
+{-# LANGUAGE TypeOperators #-}
+
 {-# OPTIONS -XGenerics #-}
 module Form where
 

@@ -1,4 +1,7 @@
+{-# LANGUAGE ImplicitParams #-}
+
 {-# OPTIONS -XGenerics #-}
+
 module Clausify
   ( clausify
   )

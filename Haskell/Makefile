@@ -4,7 +4,7 @@
 MINISAT = ../minisat/current-base
 INST    = ../instantiate
 OBJS    = $(MINISAT)/Solver.or $(MINISAT)/Prop.or $(INST)/MiniSatWrapper.or $(INST)/MiniSatInstantiateClause.or
-HFLAGS  = -fglasgow-exts -O2 -static -threaded
+HFLAGS  = -O2 -static -threaded
 HSAT    = -optl -static -lstdc++ -I../instantiate -I$(MINISAT) $(OBJS)
 GHC     = ghc
 
@@ -22,7 +22,7 @@ satplay: satplay.exe
 zoomer: zoomer.exe
 
 Sat.o: Sat.hs
-	$(GHC) -fglasgow-exts --make Sat.hs
+	$(GHC) --make Sat.hs
 
 #-- EquiParadox
 

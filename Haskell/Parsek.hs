@@ -1,4 +1,4 @@
-{-# OPTIONS -fglasgow-exts #-}
+{-# LANGUAGE Rank2Types #-}
 
 {-
 Parsek -- Copyright (c) 2003-2007, Koen Claessen

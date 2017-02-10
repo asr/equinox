@@ -1,3 +1,6 @@
+{-# LANGUAGE ImplicitParams #-}
+{-# LANGUAGE Rank2Types     #-}
+
 module Main where
 
 {-
