@@ -35,7 +35,6 @@ paradox.exe: Sat.o *.hs Paradox/*.hs ../instantiate/*.or ../minisat/current-base
 	$(GHC) $(HSAT) $(HFLAGS) -main-is Paradox.Main.main --make Paradox.Main -o paradox
 
 #-- Equinox
-# ASR (2017-02-09): Tested with GHC 6.10.4
 equinox.exe: Sat.o *.hs Equinox/*.hs ../instantiate/*.or ../minisat/current-base/*.or
 	$(GHC) $(HSAT) $(HFLAGS) -threaded -main-is Equinox.Main.main --make Equinox.Main -o equinox
 

@@ -11,7 +11,6 @@ import Data.Set( Set )
 import Data.List( nub, maximumBy, sortBy )
 import Data.Ord
 import qualified Data.Set as S
-import Control.Monad.State.Strict
 import Flags
 
 ----------------------------------------------------------------------
