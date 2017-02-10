@@ -101,15 +101,15 @@ module Parsek
   )
  where
 
-import Monad
+import Control.Monad
   ( MonadPlus(..)
   )
 
-import List
+import Data.List
   ( union
   )
 
-import Char
+import Data.Char
 
 infix  0 <?>
 infixr 1 <|>, <<|>

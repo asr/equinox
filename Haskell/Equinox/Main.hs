@@ -1,6 +1,6 @@
 {-# LANGUAGE ImplicitParams #-}
 
-module Equinox.Main where
+module Main where
 
 {-
 Equinox -- Copyright (c) 2003-2007, Koen Claessen
@@ -25,7 +25,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -}
 
-import qualified Main
+import Runner ( runner )
 import Form
 import Flags
 import Equinox.FolSat
@@ -36,7 +36,7 @@ import Equinox.FolSat
 main :: IO ()
 main =
   do putStrLn "Equinox, version 5.0alpha, 2010-06-29."
-     Main.main Equinox solveProblem
+     runner Equinox solveProblem
 
 ---------------------------------------------------------------------------
 -- solve

@@ -2,4 +2,5 @@
 *.o
 *.or
 depend.mk
+dist/
 Haskell/equinox

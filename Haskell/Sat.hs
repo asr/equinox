@@ -1,3 +1,4 @@
+{-# LANGUAGE ForeignFunctionInterface   #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
 module Sat
@@ -69,7 +70,7 @@ import Foreign.Marshal.Array ( withArray0, peekArray0 )
 import Foreign.Marshal.Alloc ( malloc, free )
 import Foreign.Storable      ( Storable )
 import Control.Exception     ( finally )
-import Random
+import System.Random
 
 
 import Form                  ( Signed(..), the, sign )

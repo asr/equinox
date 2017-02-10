@@ -32,20 +32,29 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -}
 
+import System.Exit
+  ( exitWith
+  , ExitCode(..)
+  )
+
+import System.Environment
+  ( getArgs
+  )
+
 import GHC.Environment
   ( getFullArgs
   )
 
-import System
+import System.IO
 
-import List
+import Data.List
   ( groupBy
   , intersperse
   )
 
-import Char
+import Data.Char
 
-import CPUTime
+import System.CPUTime
 
 import Control.Monad.Instances()
 

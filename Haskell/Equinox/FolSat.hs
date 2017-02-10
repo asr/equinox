@@ -26,15 +26,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import Form
 import qualified Sat
 import Name( name, prim, (%) )
-import List hiding ( union, insert, delete )
-import Maybe
+import Data.List hiding ( union, insert, delete )
+import Data.Maybe
 import Equinox.TermSat hiding ( Lit(..) )
 import qualified Equinox.TermSat as T
 import Data.Set( Set )
 import qualified Data.Set as S
 import Data.Map( Map )
 import qualified Data.Map as M
-import IO
+import System.IO
 import Flags
 import Control.Monad
 import Equinox.PSequence

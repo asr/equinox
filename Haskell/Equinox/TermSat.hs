@@ -57,10 +57,10 @@ import Equinox.ConSat
 import qualified Data.Set as S
 import Data.Map( Map )
 import qualified Data.Map as M
-import List
+import Data.List
 import Form( Symbol )
 import Flags
-import IO
+import System.IO
 import Control.Monad
 
 data State

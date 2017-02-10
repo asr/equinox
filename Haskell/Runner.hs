@@ -1,7 +1,7 @@
 {-# LANGUAGE ImplicitParams #-}
 {-# LANGUAGE Rank2Types     #-}
 
-module Main where
+module Runner where
 
 {-
 Paradox/Equinox -- Copyright (c) 2003-2007, Koen Claessen, Niklas Sorensson
@@ -29,19 +29,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 import Form
 import Control.Concurrent
 import Control.Exception
-import System
 import Flags
 import ParseProblem
 import Clausify
-import IO( hSetBuffering, stdout, BufferMode(..) )
+import System.IO ( hSetBuffering, stdout, BufferMode(..) )
 
 import Output
 
----------------------------------------------------------------------------
--- main
+import System.Exit
+  ( exitWith
+  , ExitCode(..)
+  )
 
-main :: Tool -> ((?flags :: Flags) => [Clause] -> [Clause] -> IO ClauseAnswer) -> IO ()
-main tool solveProblem =
+---------------------------------------------------------------------------
+-- runner (this was called main before but cabal does not like a
+--         Main.main function not have type IO ())
+
+runner :: Tool -> ((?flags :: Flags) => [Clause] -> [Clause] -> IO ClauseAnswer) -> IO ()
+runner tool solveProblem =
   do hSetBuffering stdout LineBuffering
      theFlags <- getFlags tool
      let ?flags = theFlags

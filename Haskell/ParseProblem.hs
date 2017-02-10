@@ -23,28 +23,33 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 -}
 
-import System
+import System.Exit
   ( exitWith
   , ExitCode(..)
-  , getEnv
   )
 
-import Char
+import System.Environment
+  ( getEnv
+  )
+
+import Data.Char
   ( isSpace
   , isAlphaNum
   , isUpper
   )
 
-import List
+import Data.List
   ( intersperse
   , nub
   )
 
-import IO
+import System.IO
   ( hFlush
   , stdout
-  , try
   )
+
+import Control.Exception as Except (try)
+import Control.Exception(SomeException)
 
 import Form
 import Name
@@ -54,13 +59,18 @@ import qualified Data.Set as S
 import Parsek as P
 
 -------------------------------------------------------------------------
+
+tryIO :: IO a -> IO (Either SomeException a)
+tryIO = Except.try
+
+-------------------------------------------------------------------------
 -- reading
 
 readProblemWithRoots :: [FilePath] -> FilePath -> IO Problem
 readProblemWithRoots roots name =
   do putStr ("Reading '" ++ name ++ "' ... ")
      hFlush stdout
-     mtptp <- IO.try (getEnv "TPTP")
+     mtptp <- tryIO (getEnv "TPTP")
      mes <- findFile [ rt ++ nm
                      | rt <- roots
                           ++ [ case reverse tptp of
@@ -102,7 +112,7 @@ readProblemWithRoots roots name =
   findFile (name:names) =
     do -- on Cygwin, the variable TPTP expects Windows paths!
        -- putStrLn ("(trying '" ++ name ++ "'...)")
-       ees <- IO.try (readFile name)
+       ees <- tryIO (readFile name)
        case ees of
          Left _  -> findFile names
          Right s -> return (Just (name,s))
