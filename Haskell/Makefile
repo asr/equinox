@@ -4,13 +4,8 @@
 MINISAT = ../minisat/current-base
 INST    = ../instantiate
 OBJS    = $(MINISAT)/Solver.or $(MINISAT)/Prop.or $(INST)/MiniSatWrapper.or $(INST)/MiniSatInstantiateClause.or
-<<<<<<< HEAD
 HFLAGS  = -O2 -threaded
 HSAT    = -lstdc++ -I../instantiate -I$(MINISAT) $(OBJS)
-=======
-HFLAGS  = -fglasgow-exts -O2 -threaded
-HSAT    = -lstdc++ -I../instantiate -I$(MINISAT) $(OBJS)
->>>>>>> cca1bd8... Remove -static
 GHC     = ghc
 
 #-- Main
