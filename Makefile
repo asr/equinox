@@ -23,3 +23,6 @@ mk-instantiate:
 
 mk-haskell:
 	make -C $(HASKELL)
+
+mk-equinox:
+	make equinox -C $(HASKELL)
