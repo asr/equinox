@@ -3,7 +3,7 @@ module Sat
   , Lit           -- :: *; Eq, Ord, Show
   , Arg(..)       -- :: *
   , Atm(..)       -- :: *
-  
+
   , run           -- :: S a -> IO a
   , okay          -- :: S Bool
   , lift          -- :: IO a -> S a
@@ -15,21 +15,21 @@ module Sat
   , conflict      -- :: S [Lit]       -- use only after solve has failed to find a model!
   , addClause     -- :: [Lit] -> S Bool
   , solve         -- :: [Lit] -> S Bool
-	, solve2
+        , solve2
   , simplify      -- :: Bool -> Bool -> S Bool
   , verbose       -- :: Int -> S Bool
 
   , newLoc        -- :: Int -> S Loc
   , getLit        -- :: Signed Atm -> S Lit
   , addClauses    -- :: [Int] -> [Signed Atm] -> S ()
-  
+
   , nClauses      -- :: S Int
   , nConflicts    -- :: S Int
   , nVars         -- :: S Int
-  
+
   , mkTrue
   , mkFalse
-  
+
   -- for debugging
   --, printStderr   -- :: String -> IO ()
   )
@@ -83,7 +83,7 @@ newLoc p = lift $ do
 addClauses :: Maybe Int -> [Int] -> [Signed Atm] -> S ()
 addClauses mn d ls = MiniSatM (\s -> addClauses_ mn d ls s)
 
-addClauses_ mn d ls s = 
+addClauses_ mn d ls s =
   do solver_clause_begin s
      mapM_ (signed addLit) ls
      mapM_ (solver_clause_add_size s . fromIntegral) d
@@ -93,10 +93,10 @@ addClauses_ mn d ls s =
        addArg (ArgV i) = solver_clause_add_lit_var s (fromIntegral i)
        addLit (Loc l :@ args) b = do
          withForeignPtr l (flip (solver_clause_add_lit s) (toCBool b))
-	 mapM_ addArg args
+         mapM_ addArg args
 
        signed f x = f (the x) (sign x)
-    
+
 
 getLit :: Signed Atm -> S Lit
 getLit atom = MiniSatM $ \s -> do
@@ -201,7 +201,7 @@ run m = withSolver (lower (simplify True True >> m)) -- with simplification
     freezeLit   l = return ()
     unfreezeLit l = return ()
     simplify  x y = return True
-    
+
     -- formula creation (with simple defaults)
     mkAnd       :: Lit -> Lit -> m Lit
     mkAnd       = defAnd
@@ -228,12 +228,12 @@ run m = withSolver (lower (simplify True True >> m)) -- with simplification
 solve = solve_ True
 
 solve2 ls = do
-	b <- (lift (randomIO :: IO Bool))
-	solve_ b ls
+        b <- (lift (randomIO :: IO Bool))
+        solve_ b ls
 
 newLit         = MiniSatM s_newlit
 addClause ls     =
-  do 
+  do
    --  lift $ putStrLn ("Sat.addClause: " ++ show ls)
      fmap fromCBool $ MiniSatM (withArray0 (Lit 0) ls . s_clause)
 solve_ b ls   = fmap fromCBool $ MiniSatM (withArray0 (Lit 0) ls . flip s_solve (toCBool b))
@@ -255,7 +255,7 @@ mkOr  x y = MiniSatM (\s -> s_or  s x y)
 mkEqu x y = MiniSatM (\s -> s_equ s x y)
 mkXor x y = MiniSatM (\s -> s_xor s x y)
 mkIte x y z = MiniSatM (\s -> s_ite s x y z)
-mkAdd x y z = MiniSatM $ \s -> 
+mkAdd x y z = MiniSatM $ \s ->
     do cp <- malloc
        sp <- malloc
        s_add s x y z cp sp
@@ -294,7 +294,7 @@ toCBool False = 0
 -- foreign imports
 
 foreign import ccall unsafe "static Wrapper.h"   s_new            :: CString -> IO Solver
-foreign import ccall unsafe "static Wrapper.h"   s_delete         :: Solver -> IO () 
+foreign import ccall unsafe "static Wrapper.h"   s_delete         :: Solver -> IO ()
 foreign import ccall unsafe "static Wrapper.h"   s_newlit         :: Solver -> IO Lit
 foreign import ccall unsafe "static Wrapper.h"   s_clause         :: Solver -> Ptr Lit -> IO CInt
 foreign import ccall unsafe "static Wrapper.h"   s_solve          :: Solver -> CInt -> Ptr Lit -> IO CInt

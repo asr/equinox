@@ -2,7 +2,7 @@ module Equinox.TermSat
   ( T             -- :: * -> *; Functor, Monad
   , Lit(..)       -- :: *; Eq, Ord, Show
   , Con           -- :: *
-  
+
   , run           -- :: T a -> IO a
   , lift          -- :: IO a -> T a
   , contradiction -- :: T ()
@@ -23,7 +23,7 @@ module Equinox.TermSat
   , simplify      -- :: Bool -> Bool -> T Bool
   )
  where
- 
+
 {-
 Equinox -- Copyright (c) 2003-2007, Koen Claessen
 
@@ -102,7 +102,7 @@ setState :: State -> T ()
 setState s = MkT (\_ -> return ((),s))
 
 liftC :: C.C a -> T a
-liftC m = MkT (\s -> do x <- m; return (x,s))  
+liftC m = MkT (\s -> do x <- m; return (x,s))
 
 lift :: IO a -> T a
 lift io = liftC (C.lift io)
@@ -180,12 +180,12 @@ solve flags xs = sat xs
  where
   put   v s = when (v <= verbose flags) $ lift $ do putStr s;   hFlush stdout
   putLn v s = when (v <= verbose flags) $ lift $ do putStrLn s; hFlush stdout
-  
+
   putTemp s = lift $
     do putStr s
        hFlush stdout
        putStr (replicate (length s) '\b')
-  
+
   sat xs =
     do putLn 3 "--> TermSat: solving..."
        b <- liftC (C.solve flags xs)
@@ -194,7 +194,7 @@ solve flags xs = sat xs
                  putTemp "(fun)"
                  check xs
          else do return False
- 
+
   check xs =
     do b <- rebuildFuntable
        s <- getState
@@ -231,7 +231,7 @@ solve flags xs = sat xs
                 ]
        setState s{ funtable = M.fromList (map snd bes) }
        return (or (map fst bes))
-    
+
   checkFunArgs args =
     do tab <- sequence
                 [ do xs' <- sequence [ getModelRep x | x <- xs ]
@@ -250,10 +250,10 @@ solve flags xs = sat xs
                , (xs2,y2) <- xsys2
                ]
        return (not (null xs))
-  
+
   buildModel =
     do s <- getState
-       
+
        theModel <-
          sequence
          [ do args' <- sequence
@@ -269,8 +269,8 @@ solve flags xs = sat xs
        setState (s{ model = M.fromList theModel })
 
   pairs :: [a] -> [(a,a)]
-  pairs []     = [] 
-  pairs (x:xs) = [ (x,y) | y <- xs ] ++ pairs xs   
-  
+  pairs []     = []
+  pairs (x:xs) = [ (x,y) | y <- xs ] ++ pairs xs
+
 simplify :: Bool -> Bool -> T Bool
 simplify a b = liftC (C.simplify a b)

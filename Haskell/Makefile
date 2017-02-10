@@ -28,28 +28,28 @@ Sat.o: Sat.hs
 
 #equiparadox.exe: Sat.o *.hs Paradox/*.hs Equinox/*.hs EquiParadox/*.hs ../instantiate/*.or ../minisat/current-base/*.or
 #	$(GHC) $(HSAT) $(HFLAGS) -main-is EquiParadox.Main.main --make EquiParadox.Main -o equiparadox
-        
+
 #-- Paradox
 
 paradox.exe: Sat.o *.hs Paradox/*.hs ../instantiate/*.or ../minisat/current-base/*.or
 	$(GHC) $(HSAT) $(HFLAGS) -main-is Paradox.Main.main --make Paradox.Main -o paradox
-        
-#-- Equinox
 
+#-- Equinox
+# ASR (2017-02-09): Tested with GHC 6.10.4
 equinox.exe: Sat.o *.hs Equinox/*.hs ../instantiate/*.or ../minisat/current-base/*.or
 	$(GHC) $(HSAT) $(HFLAGS) -threaded -main-is Equinox.Main.main --make Equinox.Main -o equinox
-                
+
 #-- Infinox
 
 infinox.exe: *.hs Infinox/*.hs
 	$(GHC) $(HFLAGS) -main-is Infinox.Main.main --make Infinox.Main -o infinox
-                
+
 
 #-- SatPlay
 
 satplay.exe: Sat.o *.hs ../instantiate/*.or ../minisat/current-base/*.or
 	$(GHC) $(HSAT) $(HFLAGS) -main-is SatPlay.Main.main --make SatPlay.Main -o satplay
-                
+
 #-- Zoomer
 
 zoomer.exe: Sat.o *.hs ../instantiate/*.or ../minisat/current-base/*.or
@@ -59,5 +59,3 @@ zoomer.exe: Sat.o *.hs ../instantiate/*.or ../minisat/current-base/*.or
 
 clean:
 	rm -f *.o *.hi paradox* equinox* infinox* satplay* Equinox/*.o Equinox/*.hi Paradox/*.o Paradox/*.hi Infinox/*.o Infinox/*.hi SatPlay/*.o SatPlay/*.hi
-	
-	

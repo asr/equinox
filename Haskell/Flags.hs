@@ -1,7 +1,7 @@
 module Flags
   ( Flags(..)
   , Tool(..)
-	, Method(InjNotSurj,SurjNotInj,Serial,Relation,Auto,Leo)
+        , Method(InjNotSurj,SurjNotInj,Serial,Relation,Auto,Leo)
   , getFlags
   , getTimeLeft
   , getTimeSpent
@@ -61,8 +61,8 @@ data Tool
   = Paradox
   | Equinox
   | Infinox
-	| SatPlay
-	| Zoomer
+        | SatPlay
+        | Zoomer
  deriving ( Eq, Show )
 
 data Flags
@@ -82,7 +82,7 @@ data Flags
   , temp         :: FilePath
   , filelist     :: Maybe FilePath
   , nrOfThreads  :: Int
-  
+
   -- infinox
   , elimit       :: Int
   , plimit       :: Int
@@ -92,10 +92,10 @@ data Flags
   , relation     :: Maybe String
   , subset       :: Maybe String
   , method       :: [Method]
-	, outfile			 :: Maybe FilePath
---	, leo					 :: Bool
-	
-  
+        , outfile                        :: Maybe FilePath
+--      , leo                                    :: Bool
+
+
   -- primitive
   , thisFile     :: FilePath
   , files        :: [FilePath]
@@ -107,10 +107,10 @@ data Method
   = InjNotSurj
   | SurjNotInj
   | Serial
-	| Bijection
-	| Relation
-	| Auto
-	| Leo
+        | Bijection
+        | Relation
+        | Auto
+        | Leo
  deriving ( Eq, Show, Read, Bounded, Enum )
 
 initFlags :: Flags
@@ -140,10 +140,10 @@ initFlags =
   , relation     = Nothing --Just "-"
   , subset       = Nothing --Just "-"
   , method       = [InjNotSurj,SurjNotInj,Serial,Auto,Leo]
-	, outfile			 = Nothing
-	, filelist		 = Nothing
---  , leo 				 = False
-  
+        , outfile                        = Nothing
+        , filelist               = Nothing
+--  , leo                                = False
+
   -- primitive
   , thisFile     = ""
   , files        = []
@@ -241,7 +241,7 @@ options =
                 ]
     }
 
-	, Option
+        , Option
     { long    = "temp"
     , tools   = [Infinox]
     , meaning = (\s f -> f{ temp = s }) <$> argName
@@ -277,7 +277,7 @@ options =
                 ]
     }
 {-
-	, Option
+        , Option
     { long    = "leo"
     , tools   = [Infinox]
     , meaning = unit (\f -> f{ leo = True })
@@ -298,7 +298,7 @@ options =
   , Option
     { long    = "method"
     , tools   = [Infinox]
-		, meaning = (\m f -> f{ method = map read m }) <$> argList (map show [(minBound :: Method) .. maxBound])
+                , meaning = (\m f -> f{ method = map read m }) <$> argList (map show [(minBound :: Method) .. maxBound])
     , help    = [ "Method to use."
                 , "Default: --method InjNotSurj"
                 ]
@@ -341,7 +341,7 @@ options =
                 ]
     }
 
-	, Option
+        , Option
     { long    = "outfile"
     , tools   = [Infinox]
     , meaning = (\file f -> f{ outfile = Just file }) <$> argName
@@ -351,8 +351,8 @@ options =
                 ]
     }
 
-	
-	, Option
+
+        , Option
     { long    = "filelist"
     , tools   = [Paradox, Equinox, Infinox]
     , meaning = (\file f -> f{ filelist = Just file }) <$> argName
@@ -407,7 +407,7 @@ getFlags tool =
             putStr (unlines err)
             putStrLn "Try --help."
             exitWith (ExitFailure (-1))
-       
+
        Right f ->
          do t <- getNrOfThreads
             return f{ start       = unPico picoT
@@ -498,25 +498,25 @@ argNum = MkArg ["<num>"] $ \xs ->
     x:xs       | all isDigit x -> Right (read x, xs)
     ('-':x):xs | all isDigit x -> Right (-read x, xs)
     _                          -> Left ["expected a number"]
-      
+
 argFile :: Arg FilePath
 argFile = MkArg ["<file>"] $ \xs ->
   case xs of
     x:xs -> Right (x, xs)
     _    -> Left ["expected a file"]
-      
+
 argName :: Arg FilePath
 argName = MkArg ["<name>"] $ \xs ->
   case xs of
     x:xs -> Right (x, xs)
     _    -> Left ["expected a name"]
-      
+
 argDots :: Arg FilePath
 argDots = MkArg ["<dot-spec>"] $ \xs ->
   case xs of
     x:xs -> Right (x, xs)
     _    -> Left ["expected a dot-spec"]
-      
+
 argNums :: Arg [Int]
 argNums = MkArg ["<nums>"] $ \xs ->
   case xs of
@@ -548,7 +548,7 @@ argList as = MkArg ["<" ++ concat (intersperse " | " as) ++ ">*"] $ \xs ->
        where
         w = takeWhile (/= ',') s
         r = tail (dropWhile (/= ',') s)
-    
+
       elts _ = Left ["argument list garbled"]
 
 parseFlags :: Tool -> Flags -> [String] -> Either [String] Flags
@@ -589,8 +589,4 @@ helpMessage tool =
 
 -------------------------------------------------------------------------
 -- the end.
-
-
-
-
 

@@ -23,4 +23,3 @@ mk-instantiate:
 
 mk-haskell:
 	make -C $(HASKELL)
-

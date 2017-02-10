@@ -50,7 +50,7 @@ prove flags theory oblig =
        st   <- {- case [ c | c <- S.toList syms, isFunSymbol c, arity c == 0 ] of
                  c:_ -> c `app` []
                  _   -> -} star `app` []
-       
+
        --lift (print "hej")
        --sequence_
        --  [ do lift (print c)
@@ -70,7 +70,7 @@ prove flags theory oblig =
          , dc <- mkDClause c
          ]
        -}
-       
+
        sequence_
          [ addGroundTerm x
          | c <- nonGroundCs -- was: oblig
@@ -112,19 +112,19 @@ prove flags theory oblig =
  where
   put   v s = when (v <= verbose flags) $ lift $ do putStr s;   hFlush stdout
   putLn v s = when (v <= verbose flags) $ lift $ do putStrLn s; hFlush stdout
-  
+
   cs = concatMap (norm []) (theory ++ oblig)
-  
+
   (groundCs,nonGroundCs) = partition isGround cs
-  
+
   syms = symbols cs
-  
+
   answer = head $ [ ans
                   | ans@(nam ::: (_ :-> t)) <- S.toList syms
                   , t == bool
                   , nam == name "$answer"
                   ] ++ [ name "$no_answer" ::: ([] :-> bool) ]
-  
+
   fs = S.filter (\f ->
     case f of
       _ ::: (_ :-> t) -> t /= bool
@@ -166,7 +166,7 @@ mkDClause ls = lits [] [] ls
       { quants  = S.toList vs
       , fquants = [] {- S.toList (vs `S.difference` ws)
                   [
-                  | 
+                  |
                   ] -}
       , defs    = [ (x,t)
                   | x <- xs
@@ -185,17 +185,17 @@ mkDClause ls = lits [] [] ls
     table       = M.fromList defs1
     graph       = M.fromList [ (x, S.toList (free t)) | (x,t) <- defs1 ]
     (cyc,xs)    = topsort graph
-    defd        = M.keysSet table `S.difference` cyc 
+    defd        = M.keysSet table `S.difference` cyc
     vs          = free (map snd defs,ms) `S.difference` defd
     --ws          = S.fromList $ [ x | (x,t) <- defs, y <- x : S.toList (free t)
-  
+
   -- simplifications
   lits defs ms (Pos (s :=: t) : ls) | s == t =
     []
-  
+
   lits defs ms (Neg (s :=: t) : ls) | s == t =
     lits defs ms ls
-  
+
   -- candidates for definitions
   lits defs ms (Neg (Var x :=: t) : ls) =
     lits ((x,t):defs) ms ls
@@ -206,16 +206,16 @@ mkDClause ls = lits [] [] ls
   -- other literals
   lits defs ms (l : ls) =
     lits defs (l:ms) ls
-  
+
   -- turn "let x=s;x=t; .. in .." into "let x=s;.. in x/=t|.."
   splitDefs defd [] =
     ([],[])
-    
+
   splitDefs defd ((x,t):defs) | x `S.member` defd =
     (defs', Neg (Var x :=: t) : ms')
    where
     (defs',ms') = splitDefs defd defs
-    
+
   splitDefs defd ((x,t):defs) =
     ((x,t):defs', ms')
    where
@@ -269,12 +269,12 @@ cclause :: [Signed Atom] -> ([(Term,Symbol)],[(Symbol,Symbol)])
 cclause cl = (defs,neqs)
  where
   theX i = (prim "A" % i) ::: V top
-    
+
   (defs,neqs) = lits 1 cl
-    
+
   lits i [] =
     ([],[])
-    
+
   lits i (Neg (s :=: Var x) : ls) =
     ((s,x):defs,neqs)
    where
@@ -325,20 +325,20 @@ addClauseSub true sub cl =
  where
   term (Var x) =
     do return (fromJust $ M.lookup x sub)
-  
+
   term (Fun f ts) =
     do as <- sequence [ term t | t <- ts ]
        f `app` as
-  
+
   atom (s :=: t) | t == truth =
     do a <- term s
        return (a T.:=: true)
-  
+
   atom (s :=: t) =
     do a <- term s
        b <- term t
        return (a T.:=: b)
-  
+
   literal (Pos a) = atom a
   literal (Neg a) = neg `fmap` atom a
 
@@ -379,7 +379,7 @@ cegar mk mmodel refine solve =
               cegar (subtract 1 `fmap` mk) (Just model') refine solve
              else
               return (Just True)
-       
+
        _ ->
          do return mb
 
@@ -407,7 +407,7 @@ instance Show Refine where
       (if f then ["libfun"]  else []) ++
       (if g then ["guess"]   else []) ++
       (if m then ["minimal"] else [])
-      
+
 letter :: Refine -> String
 letter (Refine False False _    _) = "B"
 letter (Refine True  False _    _) = "P"
@@ -426,9 +426,9 @@ refine flags opts (true,st') syms getCons cs mOldModel =
                  ++ letter opts
                  ++ "|"
                   ) >> hFlush stdout)
-     
+
      writeModel "model" true (S.toList fs)
-     
+
      model <- getModelTables
      let sameFs = S.fromList
                   [ f
@@ -450,7 +450,7 @@ refine flags opts (true,st') syms getCons cs mOldModel =
                 | c <- cs
                 , let fs = filter (not . isVarSymbol) (S.toList (symbols c))
                 ]
-     
+
      let subs = concat subss
      sequence_ [ addClauseSub true sub cl | (cl,sub) <- subs ]
      lift (putStrLn "")
@@ -506,7 +506,7 @@ check opts send fmap' cl true cons st
   -- | liberalPred opts && not (liberalFun opts) && all (not . isPredSymbol) fs =
   -- do send ' '
   --   return []
-  
+
   | otherwise =
   do Sat.run $
        do vs <- sequence [ newValue cons | x <- xs ]
@@ -530,7 +530,7 @@ check opts send fmap' cl true cons st
                 -- ouch
                 do Sat.lift (send '>')
                    return []
-          
+
               findAllSubs i =
                 do b <- Sat.solve []
                    if b then
@@ -553,14 +553,14 @@ check opts send fmap' cl true cons st
                           | i ==  750 = send 'M'
                           | i == 2000 = send '#'
                           | otherwise = return ()
-              
+
               findMinSub [] cs =
                 do Sat.lift (send '*')
                    -- EXPERIMENTAL
                    sequence_ [ Sat.addClause [Sat.neg (v =? c)] | (v,c) <- vs `zip` cs ]
                    subs <- findAllSubs 1
                    return (M.fromList (xs `zip` cs) : subs)
-              
+
               findMinSub (c:cons) cs =
                 do let nrOf_c = length [ c' | c' <- cs, c' == c ]
                        lits_c = [ l | xls <- vs, (c',l) <- xls, c' == c ]
@@ -592,7 +592,7 @@ check opts send fmap' cl true cons st
                         findMinSub (reverse (sort cons)) cs
                     else
                      do return []
-          
+
           if minimal opts
             then do Sat.lift (send '.')
                     findMinSubs
@@ -626,7 +626,7 @@ atMost k ls | k == 0 =
 
 atMost k ls | k >= length ls =
   do return ()
-  
+
 atMost k ls =
   do Sat.addClause (map Sat.neg lsa)
      if not (null lsb) then
@@ -676,10 +676,10 @@ build opts st true fmap vmap (Fun f ts) =
   do z   <- newValue image
      vgs <- sequence [ build opts st true fmap vmap t | t <- ts ]
      let (vs,dets,dfs) = unzip3 vgs
-     
+
      let entries hist [] =
            do return []
-         
+
          entries hist ((xs,y):tab) =
            do e <- conj ( [ v =? x    | (v,x) <- vs `zip` xs, not liberal || x /= st ]
                        ++ [ Sat.neg e | (zs,e) <- hist, and (zipWith over zs xs) ]
@@ -687,9 +687,9 @@ build opts st true fmap vmap (Fun f ts) =
               Sat.addClause [Sat.neg e, z =? y]
               es <- entries ((xs,e):hist) tab
               return (e:es)
-      
+
          x `over` y = (liberal && (x==st || y==st)) || x==y
-      
+
      es <- entries [] tab
      Sat.addClause es
      ds <- sequence
@@ -705,7 +705,7 @@ build opts st true fmap vmap (Fun f ts) =
                                                  return (x,yd)
                                             | (x,y) <- M.toList det
                                             ]
-                            return (M.fromList xys) 
+                            return (M.fromList xys)
                        | (det,d) <- dets `zip` ds
                        ]
      let xs = S.toList (S.unions (map M.keysSet dets'))
@@ -718,17 +718,17 @@ build opts st true fmap vmap (Fun f ts) =
            || isPredSymbol f && liberalPred opts
   Just tab' = M.lookup f fmap
   image     = df : map snd tab'
-  
+
   tab = ( map snd $ sort
           [ (number (==st) xs,(xs,y))
           | (xs,y) <- tab'
           ] ) ++ [(replicate (arity f) st, df) | liberal]
    where
     number p = length . filter p
-  
+
   df | otherwise {- isFunSymbol f -} = occursMost st (map snd tab')
      | otherwise     = st
-               
+
 occursMost :: Ord a => a -> [a] -> a
 occursMost y [] = y
 occursMost _ xs = snd . head . reverse . sort . map (\xs -> (length xs, head xs)) . group . sort $ xs
@@ -786,7 +786,7 @@ newValue xs = new (map head . group . sort $ xs)
  where
   new [x] =
     do return [(x,Sat.mkTrue)]
-  
+
   new [x,y] =
     do l <- Sat.newLit
        return [(x,Sat.neg l), (y, l)]
@@ -800,7 +800,7 @@ newValue xs = new (map head . group . sort $ xs)
 getModelValueValue :: Value a -> Sat.S a
 getModelValueValue [(x,_)] =
   do return x
-  
+
 getModelValueValue ((x,l):xls) =
   do b <- Sat.getModelValue l
      if b then return x else getModelValueValue xls
@@ -814,15 +814,15 @@ check opts cl true cons st =
      checkDefs 0 defs (M.fromList [(trueX,[true])])
  where
   (defs,neqs) = cclause cl
-  
+
   vr i = (prim "D" % i) ::: V top
- 
+
   -- going through the definitions
   checkDefs i [] vinfo'
     | not (guess opts) && or [ True | x <- S.toList (free cl), Just (_:_:_) <- [M.lookup x vinfo] ] =
         do --lift (putStr "(G)" >> hFlush stdout)
            return False
-           
+
     | otherwise =
         do case findSolution st cons vinfo neqs of
              Nothing  -> do return False
@@ -839,7 +839,7 @@ check opts cl true cons st =
              | otherwise      = (tab', df)
             where
              df = occursMost st (map snd tab')
-       
+
        tryAll $
          [ checkAssign i ((Var y,[c]):(ts `zip` (map (:[]) xs))) defs vinfo
          | (xs,c) <- tab
@@ -859,7 +859,7 @@ check opts cl true cons st =
   -- going through the assignments
   checkAssign i [] defs vinfo =
     do checkDefs i defs vinfo
-  
+
   checkAssign i ((Var x,ds):assign) defs vinfo
     | null ds' || conflict = return False
     | otherwise            = checkAssign i assign defs (M.insert x ds' vinfo)
@@ -867,12 +867,12 @@ check opts cl true cons st =
     ds' = case M.lookup x vinfo of
             Just ds0 -> ds0 `intersect` ds
             Nothing  -> ds
-  
+
     conflict = or [ M.lookup y vinfo == Just [d]
                   | [d] <- [ds']
                   , y <- matches x neqs
                   ]
-  
+
   checkAssign i ((t,ds):assign) defs vinfo =
     checkAssign (i+1) ((Var x,ds):assign) ((t,x):defs) vinfo
    where
@@ -881,16 +881,16 @@ check opts cl true cons st =
 pickDefs defs vinfo = pick . map snd . reverse . sort . map tag $ defs
  where
   pick (x:xs) = (x,xs)
-  
+
   tag (t,x) = (if S.null (free t)
                  then 0
                  else if cost x == 1
                         then 1
                         else 2 + size t,(t,x))
-  
+
   size (Var _)    = 1
   size (Fun _ ts) = 1 + sum (map size ts)
-  
+
   cost x = case M.lookup x vinfo of
              Just ds -> fromIntegral (length ds)
              Nothing -> 9999 :: Integer
@@ -948,7 +948,7 @@ findSolution st cons vinfo neqs = toMaybe (find vinfo neqs [])
  where
   find vinfo [] neqs' =
     result (M.map head vinfo)
-  
+
   find vinfo ((x,y):neqs) neqs'
     | value x /= value y = find vinfo neqs ((x,y):neqs')
     | otherwise          = bump x +++ bump y

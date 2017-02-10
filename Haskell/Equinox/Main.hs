@@ -36,7 +36,7 @@ main :: IO ()
 main =
   do putStrLn "Equinox, version 5.0alpha, 2010-06-29."
      Main.main Equinox solveProblem
-  
+
 ---------------------------------------------------------------------------
 -- solve
 

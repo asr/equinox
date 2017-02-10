@@ -3,13 +3,13 @@ module Name
   , (%)        -- :: Name -> Int -> Name
   , name, prim -- :: String -> Name
   , strip      -- :: Name -> Name
-  
+
   -- names
   , vr, sk, dp, sp, tr, dm, un, df, el, eq
   , isSimpleName
   , isEltName
   , getIndex
-	, normalName
+        , normalName
   )
  where
 
