@@ -12,6 +12,7 @@ import Data.List( nub, maximumBy, sortBy )
 import Data.Ord
 import qualified Data.Set as S
 import Flags
+import Control.Monad
 
 ----------------------------------------------------------------------
 -- clausify
@@ -371,6 +372,10 @@ newtype M a = M (String -> Int -> (a, Int))
 
 instance Functor M where
   fmap f (M h) = M (\s n -> let (x,n') = h s n in (f x, n'))
+
+instance Applicative M where
+  pure  = return
+  (<*>) = liftM2 ($)
 
 instance Monad M where
   return x =

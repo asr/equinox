@@ -80,6 +80,10 @@ newtype T a = MkT (State -> C.C (a, State))
 instance Functor T where
   fmap f (MkT m) = MkT (fmap (\(x,s) -> (f x,s)) . m)
 
+instance Applicative T where
+  pure  = return
+  (<*>) = liftM2 ($)
+
 instance Monad T where
   return x = MkT (\s -> return (x,s))
 

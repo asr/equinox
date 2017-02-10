@@ -103,7 +103,11 @@ module Parsek
 
 import Control.Monad
   ( MonadPlus(..)
+  , liftM2
   )
+
+import Control.Applicative hiding (many, (<|>), optional)
+import qualified Control.Applicative
 
 import Data.List
   ( union
@@ -143,6 +147,10 @@ instance Functor (Parser s) where
   fmap p (Parser f) =
     Parser (\fut -> f (fut . p))
 
+instance Applicative (Parser s) where
+  pure  = return
+  (<*>) = liftM2 ($)
+
 instance Monad (Parser s) where
   return a =
     Parser (\fut -> fut a)
@@ -152,6 +160,10 @@ instance Monad (Parser s) where
 
   fail s =
     Parser (\_fut exp -> Fail exp [s])
+
+instance Alternative (Parser s) where
+  empty = mzero
+  (<|>) = mplus
 
 instance MonadPlus (Parser s) where
   mzero =

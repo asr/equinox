@@ -71,6 +71,7 @@ import Foreign.Marshal.Alloc ( malloc, free )
 import Foreign.Storable      ( Storable )
 import Control.Exception     ( finally )
 import System.Random
+import Control.Monad
 
 
 import Form                  ( Signed(..), the, sign )
@@ -113,6 +114,10 @@ getLit atom = MiniSatM $ \s -> do
 
 newtype Solver = Solver (Ptr ())
 newtype S a    = MiniSatM (Solver -> IO a)
+
+instance Applicative S where
+  pure  = return
+  (<*>) = liftM2 ($)
 
 instance Monad S where
   return x =

@@ -166,6 +166,10 @@ newtype C a = MkC (State -> Sat.S (a, State))
 instance Functor C where
   fmap f (MkC m) = MkC (fmap (\(x,s) -> (f x,s)) . m)
 
+instance Applicative C where
+  pure  = return
+  (<*>) = liftM2 ($)
+
 instance Monad C where
   return x = MkC (\s -> return (x,s))
 
