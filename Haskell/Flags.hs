@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 module Flags
   ( Flags(..)
   , Tool(..)
@@ -55,6 +57,10 @@ import Data.Char
 import System.CPUTime
 
 import Control.Monad.Instances()
+
+#if __GLASGOW_HASKELL__ <= 708
+import Control.Applicative
+#endif
 
 -------------------------------------------------------------------------
 -- flags

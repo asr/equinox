@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP                        #-}
 {-# LANGUAGE ForeignFunctionInterface   #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
 
@@ -76,6 +77,9 @@ import Control.Monad
 
 import Form                  ( Signed(..), the, sign )
 
+#if __GLASGOW_HASKELL__ <= 708
+import Control.Applicative
+#endif
 
 newLoc :: Int -> S Loc
 newLoc p = lift $ do

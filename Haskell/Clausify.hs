@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP            #-}
 {-# LANGUAGE ImplicitParams #-}
 
 module Clausify
@@ -13,6 +14,10 @@ import Data.Ord
 import qualified Data.Set as S
 import Flags
 import Control.Monad
+
+#if __GLASGOW_HASKELL__ <= 708
+import Control.Applicative
+#endif
 
 ----------------------------------------------------------------------
 -- clausify

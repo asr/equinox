@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 module Equinox.TermSat
   ( T             -- :: * -> *; Functor, Monad
   , Lit(..)       -- :: *; Eq, Ord, Show
@@ -62,6 +64,10 @@ import Form( Symbol )
 import Flags
 import System.IO
 import Control.Monad
+
+#if __GLASGOW_HASKELL__ <= 708
+import Control.Applicative
+#endif
 
 data State
   = MkState

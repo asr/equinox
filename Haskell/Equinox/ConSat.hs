@@ -1,3 +1,5 @@
+{-# LANGUAGE CPP #-}
+
 module Equinox.ConSat
   ( C             -- :: * -> *; Functor, Monad
   , Lit(..)       -- :: *; Eq, Ord, Show
@@ -55,6 +57,10 @@ import System.IO
 import Flags
 import Control.Monad
 import Data.List( intersperse )
+
+#if __GLASGOW_HASKELL__ <= 708
+import Control.Applicative
+#endif
 
 data Lit
   = Lit Sat.Lit
